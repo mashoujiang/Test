@@ -19,7 +19,7 @@ public:
     }
     SharedPtr &operator=(SharedPtr &sPtr)
     {
-        if (m_ptr = sPtr.m_ptr)
+        if (m_ptr == sPtr.m_ptr)
         {
             return *this;
         }
@@ -35,6 +35,9 @@ public:
         {
             delete m_ptr;
             m_ptr = nullptr;
+            delete m_countPtr;
+            m_countPtr = nullptr;
+            std::cout << "deconstructed\n";
         }
     }
 
@@ -56,14 +59,19 @@ int main()
 {
     SharedPtr<int> iSp(new int(10));
     {
-        SharedPtr<int> temp = iSp;
+        SharedPtr<int> temp(new int(22));
+        temp = iSp;
+        SharedPtr<int> one = iSp;
         std::cout << temp.getCount() << std::endl;
         std::cout << iSp.getCount() << std::endl;
-        SharedPtr<int> one = iSp;
-        std::cout << iSp.getCount() << std::endl;
+
         SharedPtr<int> two(iSp);
+        std::cout << temp.getCount() << std::endl;
         std::cout << iSp.getCount() << std::endl;
+        std::cout << *temp.data() << std::endl;
+        std::cout << *iSp.data() << std::endl;
     }
+    std::cout << std::endl;
     SharedPtr<int> one = iSp;
     std::cout << iSp.getCount() << std::endl;
     SharedPtr<int> two(iSp);
