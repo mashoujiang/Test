@@ -1,6 +1,8 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <queue>
+#include <climits>
 #include "gtest/gtest.h"
 
 class CppFeature: public ::testing::Test{
@@ -38,4 +40,23 @@ TEST_F(CppFeature, PlacementNew){
     auto newDuration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
     ASSERT_LT(placementNewDuration, newDuration);
+}
+
+TEST_F(CppFeature, PriorityQueue)
+{
+    std::priority_queue<int> mypq;
+
+    mypq.push(30);
+    mypq.push(100);
+    mypq.push(25);
+    mypq.push(40);
+
+    int last = INT_MAX;
+    while (!mypq.empty())
+    {
+        int top = mypq.top();
+        ASSERT_GE(last, top);
+        last = top;
+        mypq.pop();
+    }
 }
