@@ -3,6 +3,7 @@
 #include <vector>
 #include <queue>
 #include <climits>
+#include <numeric>
 #include "gtest/gtest.h"
 
 class CppFeature: public ::testing::Test{
@@ -59,4 +60,35 @@ TEST_F(CppFeature, PriorityQueue)
         last = top;
         mypq.pop();
     }
+}
+
+TEST_F(CppFeature, vectorReserve){
+    std::vector<int> nums(10);
+    std::iota(nums.begin(), nums.end(), 1);
+    std::copy(nums.begin(), nums.end(), std::ostream_iterator<int>(std::cout , " "));
+    std::cout << std::endl;
+
+    nums.reserve(5);
+    EXPECT_EQ(nums.size(), 10);
+    EXPECT_EQ(nums.capacity(), 10);
+    std::copy(nums.begin(), nums.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+
+    nums.resize(5);
+    EXPECT_EQ(nums.size(), 5);
+    EXPECT_EQ(nums.capacity(), 10);
+    std::copy(nums.begin(), nums.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+
+    nums.reserve(5);
+    EXPECT_EQ(nums.size(), 5);
+    EXPECT_EQ(nums.capacity(), 10);
+    std::copy(nums.begin(), nums.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+
+    nums.shrink_to_fit();
+    EXPECT_EQ(nums.size(), 5);
+    EXPECT_EQ(nums.capacity(), 5);
+    std::copy(nums.begin(), nums.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
 }

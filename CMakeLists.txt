@@ -9,3 +9,7 @@ add_subdirectory(thirdparty)
 add_executable(CppFeature CppFeature.cpp)
 target_link_directories(CppFeature PRIVATE ${GTEST_INCLUDE_DIRS})
 target_link_libraries(CppFeature PRIVATE gtest gmock gtest_main pthread)
+
+add_executable(TestApp Test.cpp)
+target_link_directories(TestApp PRIVATE ${GTEST_INCLUDE_DIRS})
+target_link_libraries(TestApp PRIVATE  pthread)
