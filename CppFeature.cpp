@@ -1,12 +1,27 @@
+#include "Common.hpp"
 #include "gtest/gtest.h"
-#include <climits>
-#include <iostream>
-#include <numeric>
-#include <queue>
-#include <thread>
-#include <vector>
 
-class CppFeature : public ::testing::Test {};
+class CppFeature : public ::testing::Test {
+public:
+  static int ThreadFunc(const std::string &name) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    return name.size();
+  }
+
+  template <typename F, typename... Args>
+  inline std::future<typename std::result_of<F(Args...)>::type>
+  RealAsync(F &&f, Args &&... args) {
+    return std::async(std::launch::async, std::forward<F>(f),
+                      std::forward<Args>(args)...);
+  }
+
+  template <typename F, typename... Args>
+  inline std::future<typename std::result_of<F(Args...)>::type>
+  SyncTask(F &&f, Args &&... args) {
+    return std::async(std::launch::async, std::forward<F>(f),
+                      std::forward<Args>(args)...);
+  }
+};
 
 class Base {
 public:
@@ -105,10 +120,47 @@ TEST_F(CppFeature, STL_Copy) {
   std::cout << "There is a space before this sentence." << std::endl;
 
   std::istringstream anotherIss(sentence);
-  std::vector<std::string> anotherTokens{std::istream_iterator<std::string>{anotherIss}, std::istream_iterator<std::string>{}};
+  std::vector<std::string> anotherTokens{
+      std::istream_iterator<std::string>{anotherIss},
+      std::istream_iterator<std::string>{}};
   std::copy(anotherTokens.begin(), anotherTokens.end(),
             std::ostream_iterator<std::string>(std::cout, " "));
   std::cout << "There is a space before this sentence." << std::endl;
 
   std::cout << std::endl;
+}
+
+// std::async(f) is equal to std::async(std::launch::async |
+// std::launch::deferred, f)
+TEST_F(CppFeature, STL_Async_default) {
+  std::string tName{"STL_async_default"};
+  auto future = std::async(ThreadFunc, tName);
+  std::future_status status;
+  do {
+    status = future.wait_for(std::chrono::milliseconds(500));
+    if (status == std::future_status::deferred) {
+      std::cout << "task is deferred" << std::endl;
+    } else if (status == std::future_status::timeout) {
+      std::cout << "task is timeout" << std::endl;
+    } else {
+      std::cout << "task is ready" << std::endl;
+    }
+  } while (status != std::future_status::ready);
+
+  auto ans = future.get();
+  EXPECT_EQ(ans, tName.size());
+}
+
+TEST_F(CppFeature, STL_RealAsync) {
+  std::string tName{"RealAsync"};
+  auto future = RealAsync(ThreadFunc, tName);
+  auto res = future.get();
+  EXPECT_EQ(res, tName.size());
+}
+
+TEST_F(CppFeature, STL_SyncTask) {
+  std::string tName{"SyncTask"};
+  auto future = SyncTask(ThreadFunc, tName);
+  auto res = future.get();
+  EXPECT_EQ(res, tName.size());
 }
