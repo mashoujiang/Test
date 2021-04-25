@@ -5,6 +5,7 @@ class CppFeature : public ::testing::Test {
 public:
   static int ThreadFunc(const std::string &name) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::cout << count++ << std::endl;
     return name.size();
   }
 
@@ -21,7 +22,10 @@ public:
     return std::async(std::launch::async, std::forward<F>(f),
                       std::forward<Args>(args)...);
   }
+private:
+  static int count;
 };
+int CppFeature::count = 1;
 
 class Base {
 public:
@@ -173,4 +177,22 @@ TEST_F(CppFeature, STL_atomic) {
   };
   std::atomic<A> a;
   std::cout << std::boolalpha << a.is_lock_free() << std::endl;
+}
+
+TEST_F(CppFeature, STL_AsyncExpectBlock)
+{
+  std::string tName{"SyncTask"};
+  SyncTask(ThreadFunc, tName);
+  SyncTask(ThreadFunc, tName);
+  SyncTask(ThreadFunc, tName);
+  std::async(std::launch::async, [](){std::cout << "Test done\n";});
+}
+
+TEST_F(CppFeature, STL_AsyncExpectNotBlock)
+{
+  std::string tName{"SyncTask"};
+  auto f1 = SyncTask(ThreadFunc, tName);
+  auto f2 = SyncTask(ThreadFunc, tName);
+  auto f3 = SyncTask(ThreadFunc, tName);
+  std::async(std::launch::async, []() { std::cout << "Test done\n"; });
 }
