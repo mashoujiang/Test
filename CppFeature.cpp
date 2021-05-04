@@ -164,3 +164,13 @@ TEST_F(CppFeature, STL_SyncTask) {
   auto res = future.get();
   EXPECT_EQ(res, tName.size());
 }
+
+TEST_F(CppFeature, STL_atomic) {
+  struct A {
+    float x;
+    int y;
+    long long z;
+  };
+  std::atomic<A> a;
+  std::cout << std::boolalpha << a.is_lock_free() << std::endl;
+}
