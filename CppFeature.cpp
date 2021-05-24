@@ -196,3 +196,20 @@ TEST_F(CppFeature, STL_AsyncExpectNotBlock)
   auto f3 = SyncTask(ThreadFunc, tName);
   std::async(std::launch::async, []() { std::cout << "Test done\n"; });
 }
+
+struct DATA
+{
+  DATA()
+  {
+    std::cout << "Constructor DATA " << ++data << " times\n";
+  }
+  static int data;
+};
+int DATA::data = 0;
+TEST_F(CppFeature, STL_ThreadAlwaysWillCopyPara){
+  DATA data;
+  std::thread t([](DATA& data){
+    std::cout << "hello";
+  }, std::ref(data));
+  t.join();
+}
