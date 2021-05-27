@@ -1,9 +1,11 @@
 #include "Common.hpp"
 #include "gtest/gtest.h"
 
-class CppFeature : public ::testing::Test {
+class CppFeature : public ::testing::Test
+{
 public:
-  static int ThreadFunc(const std::string &name) {
+  static int ThreadFunc(const std::string &name)
+  {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     std::cout << count++ << std::endl;
     return name.size();
@@ -11,23 +13,27 @@ public:
 
   template <typename F, typename... Args>
   inline std::future<typename std::result_of<F(Args...)>::type>
-  RealAsync(F &&f, Args &&... args) {
+  RealAsync(F &&f, Args &&...args)
+  {
     return std::async(std::launch::async, std::forward<F>(f),
                       std::forward<Args>(args)...);
   }
 
   template <typename F, typename... Args>
   inline std::future<typename std::result_of<F(Args...)>::type>
-  SyncTask(F &&f, Args &&... args) {
+  SyncTask(F &&f, Args &&...args)
+  {
     return std::async(std::launch::async, std::forward<F>(f),
                       std::forward<Args>(args)...);
   }
+
 private:
   static int count;
 };
 int CppFeature::count = 1;
 
-class Base {
+class Base
+{
 public:
   Base() = default;
   ~Base() = default;
@@ -36,10 +42,12 @@ private:
   int data{0};
 };
 
-TEST_F(CppFeature, PlacementNew) {
+TEST_F(CppFeature, PlacementNew)
+{
   char buf[10000 * sizeof(Base)];
   auto t1 = std::chrono::high_resolution_clock::now();
-  for (int i = 0; i < 10000; ++i) {
+  for (int i = 0; i < 10000; ++i)
+  {
     Base *base = new (buf) Base();
     base->~Base();
   }
@@ -48,7 +56,8 @@ TEST_F(CppFeature, PlacementNew) {
       std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
   t1 = std::chrono::high_resolution_clock::now();
-  for (int i = 0; i < 10000; ++i) {
+  for (int i = 0; i < 10000; ++i)
+  {
     Base *base = new Base();
     delete base;
   }
@@ -59,7 +68,8 @@ TEST_F(CppFeature, PlacementNew) {
   ASSERT_LT(placementNewDuration, newDuration);
 }
 
-TEST_F(CppFeature, PriorityQueue) {
+TEST_F(CppFeature, PriorityQueue)
+{
   std::priority_queue<int> mypq;
 
   mypq.push(30);
@@ -68,7 +78,8 @@ TEST_F(CppFeature, PriorityQueue) {
   mypq.push(40);
 
   int last = INT_MAX;
-  while (!mypq.empty()) {
+  while (!mypq.empty())
+  {
     int top = mypq.top();
     ASSERT_GE(last, top);
     last = top;
@@ -76,7 +87,8 @@ TEST_F(CppFeature, PriorityQueue) {
   }
 }
 
-TEST_F(CppFeature, vectorReserve) {
+TEST_F(CppFeature, vectorReserve)
+{
   std::vector<int> nums(10);
   std::iota(nums.begin(), nums.end(), 1);
   std::copy(nums.begin(), nums.end(),
@@ -112,7 +124,8 @@ TEST_F(CppFeature, vectorReserve) {
   std::cout << std::endl;
 }
 
-TEST_F(CppFeature, STL_Copy) {
+TEST_F(CppFeature, STL_Copy)
+{
   std::string sentence = " hello ma shoujiang   nice to meet you!   ";
   std::vector<std::string> tokens;
   std::istringstream iss(sentence);
@@ -136,17 +149,24 @@ TEST_F(CppFeature, STL_Copy) {
 
 // std::async(f) is equal to std::async(std::launch::async |
 // std::launch::deferred, f)
-TEST_F(CppFeature, STL_Async_default) {
+TEST_F(CppFeature, STL_Async_default)
+{
   std::string tName{"STL_async_default"};
   auto future = std::async(ThreadFunc, tName);
   std::future_status status;
-  do {
+  do
+  {
     status = future.wait_for(std::chrono::milliseconds(500));
-    if (status == std::future_status::deferred) {
+    if (status == std::future_status::deferred)
+    {
       std::cout << "task is deferred" << std::endl;
-    } else if (status == std::future_status::timeout) {
+    }
+    else if (status == std::future_status::timeout)
+    {
       std::cout << "task is timeout" << std::endl;
-    } else {
+    }
+    else
+    {
       std::cout << "task is ready" << std::endl;
     }
   } while (status != std::future_status::ready);
@@ -155,22 +175,26 @@ TEST_F(CppFeature, STL_Async_default) {
   EXPECT_EQ(ans, tName.size());
 }
 
-TEST_F(CppFeature, STL_RealAsync) {
+TEST_F(CppFeature, STL_RealAsync)
+{
   std::string tName{"RealAsync"};
   auto future = RealAsync(ThreadFunc, tName);
   auto res = future.get();
   EXPECT_EQ(res, tName.size());
 }
 
-TEST_F(CppFeature, STL_SyncTask) {
+TEST_F(CppFeature, STL_SyncTask)
+{
   std::string tName{"SyncTask"};
   auto future = SyncTask(ThreadFunc, tName);
   auto res = future.get();
   EXPECT_EQ(res, tName.size());
 }
 
-TEST_F(CppFeature, STL_atomic) {
-  struct A {
+TEST_F(CppFeature, STL_atomic)
+{
+  struct A
+  {
     float x;
     int y;
     long long z;
@@ -185,7 +209,7 @@ TEST_F(CppFeature, STL_AsyncExpectBlock)
   SyncTask(ThreadFunc, tName);
   SyncTask(ThreadFunc, tName);
   SyncTask(ThreadFunc, tName);
-  std::async(std::launch::async, [](){std::cout << "Test done\n";});
+  std::async(std::launch::async, []() { std::cout << "Test done\n"; });
 }
 
 TEST_F(CppFeature, STL_AsyncExpectNotBlock)
@@ -206,10 +230,50 @@ struct DATA
   static int data;
 };
 int DATA::data = 0;
-TEST_F(CppFeature, STL_ThreadAlwaysWillCopyPara){
+TEST_F(CppFeature, STL_ThreadAlwaysWillCopyPara)
+{
   DATA data;
-  std::thread t([](DATA& data){
+  std::thread t([](DATA &data) {
     std::cout << "hello";
-  }, std::ref(data));
+  },
+                std::ref(data));
   t.join();
+}
+
+class ThreadLocal
+{
+public:
+  static thread_local std::map<std::string, std::string> a;
+};
+thread_local std::map<std::string, std::string> ThreadLocal::a = {};
+ThreadLocal tl;
+void updateA(int threadId)
+{
+  std::cout << "thread: " << threadId << std::endl;
+  tl.a[std::to_string(threadId)] = std::to_string(threadId);
+}
+void readA(int threadId)
+{
+  std::cout << "thread: " << threadId << ", a: " << tl.a[std::to_string(threadId)] << std::endl;
+}
+TEST_F(CppFeature, STL_thread_local_Safe)
+{
+  std::thread t1([]() {
+    updateA(1);
+    updateA(1);
+    readA(1);
+  });
+  std::thread t2([]() {
+    updateA(2);
+    updateA(2);
+    readA(2);
+  });
+  std::thread t3([]() {
+    updateA(3);
+    updateA(3);
+    readA(3);
+  });
+  t1.join();
+  t2.join();
+  t3.join();
 }
