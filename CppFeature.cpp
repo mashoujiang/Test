@@ -7,7 +7,7 @@ public:
   static int ThreadFunc(const std::string &name)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    std::cout << count++ << std::endl;
+    std::cout << "thread id: " << std::this_thread::get_id() << std::endl;
     return name.size();
   }
 
@@ -23,7 +23,7 @@ public:
   inline std::future<typename std::result_of<F(Args...)>::type>
   SyncTask(F &&f, Args &&...args)
   {
-    return std::async(std::launch::async, std::forward<F>(f),
+    return std::async(std::launch::deferred, std::forward<F>(f),
                       std::forward<Args>(args)...);
   }
 
@@ -178,6 +178,7 @@ TEST_F(CppFeature, STL_Async_default)
 TEST_F(CppFeature, STL_RealAsync)
 {
   std::string tName{"RealAsync"};
+  std::cout << "thread id: " << std::this_thread::get_id() << std::endl;
   auto future = RealAsync(ThreadFunc, tName);
   auto res = future.get();
   EXPECT_EQ(res, tName.size());
@@ -186,6 +187,7 @@ TEST_F(CppFeature, STL_RealAsync)
 TEST_F(CppFeature, STL_SyncTask)
 {
   std::string tName{"SyncTask"};
+  std::cout << "thread id: " << std::this_thread::get_id() << std::endl;
   auto future = SyncTask(ThreadFunc, tName);
   auto res = future.get();
   EXPECT_EQ(res, tName.size());
