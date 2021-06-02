@@ -17,6 +17,7 @@
 #include <numeric>
 #include <queue>
 #include <set>
+#include <shared_mutex>
 #include <string>
 #include <thread>
 #include <tuple>
