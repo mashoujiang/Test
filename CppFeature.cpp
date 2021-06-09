@@ -279,3 +279,28 @@ TEST_F(CppFeature, STL_thread_local_Safe)
   t2.join();
   t3.join();
 }
+
+class StaticData{
+public:
+  void StaticTempFunc()
+  {
+    static int num = 0;
+    std::cout << ++num << std::endl;
+  }
+};
+TEST_F(CppFeature, StaticFuncTest){
+  StaticData d1;
+  StaticData d2;
+  d1.StaticTempFunc();
+  d1.StaticTempFunc();
+  d2.StaticTempFunc();
+  d2.StaticTempFunc();
+}
+
+TEST_F(CppFeature, PackagedTask_get_future){
+  std::packaged_task<void()> task([](){std::cout << "hello\n";});
+  task();
+  std::cout <<"done?\n";
+  auto future = task.get_future();
+  future.get();
+}
