@@ -211,7 +211,7 @@ TEST_F(CppFeature, STL_AsyncExpectBlock)
   SyncTask(ThreadFunc, tName);
   SyncTask(ThreadFunc, tName);
   SyncTask(ThreadFunc, tName);
-  std::async(std::launch::async, []() { std::cout << "Test done\n"; });
+  auto final = std::async(std::launch::async, []() { std::cout << "Test done\n"; });
 }
 
 TEST_F(CppFeature, STL_AsyncExpectNotBlock)
@@ -220,7 +220,7 @@ TEST_F(CppFeature, STL_AsyncExpectNotBlock)
   auto f1 = SyncTask(ThreadFunc, tName);
   auto f2 = SyncTask(ThreadFunc, tName);
   auto f3 = SyncTask(ThreadFunc, tName);
-  std::async(std::launch::async, []() { std::cout << "Test done\n"; });
+  auto final = std::async(std::launch::async, []() { std::cout << "Test done\n"; });
 }
 
 struct DATA
@@ -303,4 +303,15 @@ TEST_F(CppFeature, PackagedTask_get_future){
   std::cout <<"done?\n";
   auto future = task.get_future();
   future.get();
+}
+
+TEST_F(CppFeature, LockFree){
+  struct Node{
+    Node* next;
+    int data {0};
+  };
+  std::atomic<Node*> node = nullptr;
+  auto newNode = new Node();
+  newNode->next = node;
+  while(node.compare_exchange_weak(newNode, newNode));
 }
