@@ -211,7 +211,8 @@ TEST_F(CppFeature, STL_AsyncExpectBlock)
   SyncTask(ThreadFunc, tName);
   SyncTask(ThreadFunc, tName);
   SyncTask(ThreadFunc, tName);
-  auto final = std::async(std::launch::async, []() { std::cout << "Test done\n"; });
+  auto final = std::async(std::launch::async, []()
+                          { std::cout << "Test done\n"; });
 }
 
 TEST_F(CppFeature, STL_AsyncExpectNotBlock)
@@ -220,7 +221,8 @@ TEST_F(CppFeature, STL_AsyncExpectNotBlock)
   auto f1 = SyncTask(ThreadFunc, tName);
   auto f2 = SyncTask(ThreadFunc, tName);
   auto f3 = SyncTask(ThreadFunc, tName);
-  auto final = std::async(std::launch::async, []() { std::cout << "Test done\n"; });
+  auto final = std::async(std::launch::async, []()
+                          { std::cout << "Test done\n"; });
 }
 
 struct DATA
@@ -235,9 +237,8 @@ int DATA::data = 0;
 TEST_F(CppFeature, STL_ThreadAlwaysWillCopyPara)
 {
   DATA data;
-  std::thread t([](DATA &data) {
-    std::cout << "hello";
-  },
+  std::thread t([](DATA &data)
+                { std::cout << "hello"; },
                 std::ref(data));
   t.join();
 }
@@ -260,27 +261,31 @@ void readA(int threadId)
 }
 TEST_F(CppFeature, STL_thread_local_Safe)
 {
-  std::thread t1([]() {
-    updateA(1);
-    updateA(1);
-    readA(1);
-  });
-  std::thread t2([]() {
-    updateA(2);
-    updateA(2);
-    readA(2);
-  });
-  std::thread t3([]() {
-    updateA(3);
-    updateA(3);
-    readA(3);
-  });
+  std::thread t1([]()
+                 {
+                   updateA(1);
+                   updateA(1);
+                   readA(1);
+                 });
+  std::thread t2([]()
+                 {
+                   updateA(2);
+                   updateA(2);
+                   readA(2);
+                 });
+  std::thread t3([]()
+                 {
+                   updateA(3);
+                   updateA(3);
+                   readA(3);
+                 });
   t1.join();
   t2.join();
   t3.join();
 }
 
-class StaticData{
+class StaticData
+{
 public:
   void StaticTempFunc()
   {
@@ -288,7 +293,8 @@ public:
     std::cout << ++num << std::endl;
   }
 };
-TEST_F(CppFeature, StaticFuncTest){
+TEST_F(CppFeature, StaticFuncTest)
+{
   StaticData d1;
   StaticData d2;
   d1.StaticTempFunc();
@@ -297,21 +303,35 @@ TEST_F(CppFeature, StaticFuncTest){
   d2.StaticTempFunc();
 }
 
-TEST_F(CppFeature, PackagedTask_get_future){
-  std::packaged_task<void()> task([](){std::cout << "hello\n";});
+TEST_F(CppFeature, PackagedTask_get_future)
+{
+  std::packaged_task<void()> task([]()
+                                  { std::cout << "hello\n"; });
   task();
-  std::cout <<"done?\n";
+  std::cout << "done?\n";
   auto future = task.get_future();
   future.get();
 }
 
-TEST_F(CppFeature, LockFree){
-  struct Node{
-    Node* next;
-    int data {0};
+TEST_F(CppFeature, LockFree)
+{
+  struct Node
+  {
+    Node *next;
+    int data{0};
   };
-  std::atomic<Node*> node = nullptr;
+  std::atomic<Node *> node = nullptr;
   auto newNode = new Node();
   newNode->next = node;
-  while(node.compare_exchange_weak(newNode, newNode));
+  while (node.compare_exchange_weak(newNode, newNode))
+    ;
+}
+
+TEST_F(CppFeature, ReinterpretCast)
+{
+  int a = 0x00006261;
+  int *pa = &a;
+  char *str = reinterpret_cast<char *>(pa);
+  // char *str = static_cast<char *>(pa); // error during compiling, compiler will check type
+  EXPECT_EQ(std::string(str), "ab");
 }
